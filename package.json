@@ -7,7 +7,8 @@
     "typecheck:w": "tsc --noemit --watch",
     "lint": "eslint . --ext .ts",
     "test": "jest --runInBand",
-    "test:w": "yarn test --watch"
+    "test:w": "yarn test --watch",
+    "deploy": "cdk deploy --ci --require-approval never -O cdk.out/outputs.json"
   },
   "author": "doubleloop",
   "dependencies": {
@@ -23,7 +24,8 @@
     "esbuild-jest": "^0.5.0",
     "jest": "^28.1.0",
     "ts-node": "^10.8.0",
-    "typescript": "^4.7.2"
+    "typescript": "^4.7.2",
+    "@aws-cdk/core": "^1.157.0"
   },
   "ntl": {
     "runner": "yarn"
