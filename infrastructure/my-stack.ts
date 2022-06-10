@@ -1,6 +1,8 @@
 import {App, Stack} from "aws-cdk-lib"
 import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs";
 import {Runtime} from "aws-cdk-lib/aws-lambda";
+import {HttpLambdaIntegration} from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
+import {HttpApi, HttpMethod} from "@aws-cdk/aws-apigatewayv2-alpha";
 
 const app = new App()
 
@@ -11,7 +13,7 @@ const myStack = new Stack(app, "MyStack", {
     }
 })
 
-const lambda = new NodejsFunction(myStack, "echo", {
+const echo = new NodejsFunction(myStack, "echo", {
     entry: "src/echo-handler.ts",
     bundling: {
         externalModules: [
@@ -20,4 +22,14 @@ const lambda = new NodejsFunction(myStack, "echo", {
     },
     runtime: Runtime.NODEJS_16_X,
     functionName: "MyStack-echo"
+})
+
+const echoIntegration = new HttpLambdaIntegration("echoIntegration", echo)
+
+const httpApi = new HttpApi(myStack, "httpApi")
+
+httpApi.addRoutes({
+    path: "/echo",
+    methods: [HttpMethod.GET],
+    integration: echoIntegration
 })
