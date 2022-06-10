@@ -3,6 +3,8 @@ import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs";
 import {Runtime} from "aws-cdk-lib/aws-lambda";
 import {HttpLambdaIntegration} from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
 import {HttpApi, HttpMethod} from "@aws-cdk/aws-apigatewayv2-alpha";
+import {Queue} from "aws-cdk-lib/aws-sqs";
+import {Effect, PolicyStatement, Role, ServicePrincipal} from "aws-cdk-lib/aws-iam";
 
 const app = new App()
 
@@ -13,6 +15,19 @@ const myStack = new Stack(app, "MyStack", {
     }
 })
 
+const nameQueue = new Queue(myStack, "nameQueue", {
+    queueName: "name-queue"
+})
+
+const echoRole = new Role(myStack, "echoRole", {
+    assumedBy: new ServicePrincipal("lambda.amazonaws.com")
+});
+echoRole.addToPolicy(new PolicyStatement({
+    actions: ["SQS:*"],
+    effect: Effect.ALLOW,
+    resources: [nameQueue.queueArn]
+}))
+
 const echo = new NodejsFunction(myStack, "echo", {
     entry: "src/echo-handler.ts",
     bundling: {
@@ -21,7 +36,8 @@ const echo = new NodejsFunction(myStack, "echo", {
         ],
     },
     runtime: Runtime.NODEJS_16_X,
-    functionName: "MyStack-echo"
+    functionName: "MyStack-echo",
+    role: echoRole
 })
 
 const echoIntegration = new HttpLambdaIntegration("echoIntegration", echo)
@@ -33,3 +49,4 @@ httpApi.addRoutes({
     methods: [HttpMethod.GET],
     integration: echoIntegration
 })
+
